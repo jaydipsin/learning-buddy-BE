@@ -24,6 +24,22 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
+    organizationName: {
+      type: String,
+      required: true,
+    },
+    parentNumber: {
+      type: String,
+      required: true,
+    },
+    subjects: {
+      type: [String],
+      required: true,
+    },
+    role: {
+      type: String,
+      required: true,
+    },
   },
   {
     timestamps: true,
