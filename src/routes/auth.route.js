@@ -1,17 +1,17 @@
-import { validateRegisterBody } from "../validators/auth.validator";
+import authValidators from "../validators/auth.validator.js";
+import express from "express";
 
-const express = require("express");
-const {
+import {
   handleLogin,
   handleRegister,
   handleLogout,
   handleForgotPassword,
-} = require("../controllers/auth.controller");
-const { handleRefreshToken } = require("../controllers/refresh.controller");
+} from "../controllers/auth.controller.js";
+import { handleRefreshToken } from "../controllers/refresh.controller.js";
 const router = express.Router();
 
 router.post("/login", handleLogin);
-router.post("/register", validateRegisterBody, handleRegister);
+router.post("/register", authValidators.validateRegisterBody, handleRegister);
 router.post("/logout", handleLogout);
 router.post("/forgot-password", handleForgotPassword);
 

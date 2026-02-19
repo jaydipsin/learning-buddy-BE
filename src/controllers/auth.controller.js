@@ -1,19 +1,19 @@
 import { validationResult } from "express-validator";
 import bcrypt from "bcrypt";
-import User from "../models/user.model";
-import jwt from "jsonwebtoken";
+import User from "../models/user.model.js";
 import dotenv from "dotenv";
 
 import {
   generateAccessToken,
   generateRefreshToken,
-} from "../utils/generate-token";
+} from "../utils/generate-token.js";
+import { cookiesConfigration } from "../helper/cookie-config.js";
 
 dotenv.config();
 
 export const handleRegister = async (req, res) => {
   try {
-    const erros = vlidateResult(req);
+    const erros = validationResult(req);
     if (!erros.isEmpty()) {
       return res.status(400).json({ message: erros.array()[0].msg });
     }
@@ -28,8 +28,9 @@ export const handleRegister = async (req, res) => {
       role,
     } = req.body;
 
-    const user = await User.findOne({ $or: { email, userName } });
-
+    const user = await User.findOne({
+      $or: [{ email: email }, { userName: userName }],
+    });
     if (user) {
       return res.status(400).json({ message: "User already exists" });
     }
@@ -58,15 +59,23 @@ export const handleRegister = async (req, res) => {
 
     const accessToken = generateAccessToken(newUser);
 
-    res.cookies("refreshToken", refreshToken, {
-      httpOnly: false,
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+    res.cookie("refreshToken", refreshToken, cookiesConfigration);
 
     newUser.refreshToken = refreshToken;
     await newUser.save();
+    console.log(newUser);
+    return res.status(201).json({
+      message: "User created successfully",
+      data: {
+        user: newUser.toObject(),
+        accessToken,
+      },
+    });
   } catch (err) {
-    return res.status(500).json({ message: "Internal server error" });
+    return err instanceof Error
+      ? res.status(500).json({ message: err.message })
+      : res.status(500).json({ message: "Internal server error" });
+    // return res.status(500).json({ message: "Internal server error" });
   }
 };
 

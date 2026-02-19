@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import {
   JWT_ACCESS_SECRETS_KEY,
   JWT_REFRESH_SECRETS_KEY,
-} from "../utils/global.config";
+} from "../utils/global.config.js";
 
 const generateRefreshToken = (user) => {
   const refreshToken = jwt.sign(

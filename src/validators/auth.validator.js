@@ -1,4 +1,8 @@
-module.exports = {
+import { body } from "express-validator";
+
+
+
+const authValidators = {
   validateRegisterBody: [
     body("userName").notEmpty().withMessage("User name is required"),
     body("email")
@@ -55,3 +59,6 @@ module.exports = {
       .withMessage("Confirm password must be at least 8 characters long"),
   ],
 };
+
+
+export default authValidators;
