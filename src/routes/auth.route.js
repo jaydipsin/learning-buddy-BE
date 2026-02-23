@@ -10,11 +10,13 @@ import {
 import { handleRefreshToken } from "../controllers/refresh.controller.js";
 const router = express.Router();
 
-router.post("/login", handleLogin);
+router.post("/login", authValidators.validateLoginBody, handleLogin);
 router.post("/register", authValidators.validateRegisterBody, handleRegister);
 router.post("/logout", handleLogout);
 router.post("/forgot-password", handleForgotPassword);
-
+router.get("", (req, res) => {
+  res.json({ message: "Auth route" });
+});
 // Renew Token
 
 router.post("/refresh", handleRefreshToken);
