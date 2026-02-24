@@ -2,18 +2,17 @@ import User from "../models/user.model.js";
 
 export const handleUserProfile = async (req, res) => {
   try {
-    const { id } = req.params;
+    console.log(`User profile fetched for user `, req.user);
+    const user = req.user;
+    const dbUser = await User.findOne({ _id: user._id });
 
-    const user = await User.findOne({ _id: id });
-
-    if (!user) {
+    if (!dbUser) {
       return res.status(404).json({ message: "User not found" });
     }
-
     res.status(200).json({
       message: "User profile fetched successfully",
       data: {
-        user: user.toObject(),
+        user: dbUser.toObject(),
       },
     });
   } catch (error) {

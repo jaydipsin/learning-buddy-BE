@@ -19,6 +19,6 @@ router.get("", (req, res) => {
 });
 // Renew Token
 
-router.post("/refresh", handleRefreshToken);
+router.get("/refresh", handleRefreshToken);
 
 export default router;
