@@ -10,6 +10,7 @@ import {
 } from "../utils/generate-token.js";
 import { cookiesConfigration } from "../helper/cookie-config.js";
 import { generateError } from "../helper/generate-error.js";
+import { blacklistAccessToken } from "../utils/token-blacklist.js";
 
 dotenv.config();
 
@@ -126,7 +127,16 @@ export const handleLogin = async (req, res) => {
 
 export const handleLogout = async (req, res) => {
   try {
-    const accessToken = req.headers.authorization.split(" ")[1];
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ message: "Access token not found" });
+    }
+
+    const accessToken = authHeader.split(" ")[1];
+    if (!accessToken) {
+      return res.status(401).json({ message: "Access token not found" });
+    }
+
     console.log(`Access token received for logout: ${accessToken}`);
     const accessTokenUser = jwt.verify(
       accessToken,
@@ -156,10 +166,10 @@ export const handleLogout = async (req, res) => {
     dbUser.refreshToken = null;
     await dbUser.save();
 
-    res.clearCookie("refreshToken", cookiesConfigration);
+    blacklistAccessToken(accessToken, accessTokenUser.exp);
+    blacklistAccessToken(refreshToken, user.exp);
 
-    jwt.destroy(refreshToken);
-    jwt.destroy(accessToken);
+    res.clearCookie("refreshToken", cookiesConfigration);
 
     return res.status(200).json({ message: "Logout successful" });
   } catch (error) {

@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import { JWT_ACCESS_SECRET_KEY } from "../utils/global.config.js";
 import { generateError } from "../helper/generate-error.js";
+import { isAccessTokenBlacklisted } from "../utils/token-blacklist.js";
 
 export const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -11,6 +12,11 @@ export const authMiddleware = (req, res, next) => {
   if (!accessToken) {
     generateError("Unauthorized", 401);
   }
+
+  if (isAccessTokenBlacklisted(accessToken)) {
+    generateError("Access token has been revoked", 401);
+  }
+
   try {
     const decode = jwt.verify(accessToken, JWT_ACCESS_SECRET_KEY);
     req.user = decode;
