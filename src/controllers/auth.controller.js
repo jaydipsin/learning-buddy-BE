@@ -2,12 +2,15 @@ import { validationResult } from "express-validator";
 import bcrypt from "bcrypt";
 import User from "../models/user.model.js";
 import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
 
 import {
   generateAccessToken,
   generateRefreshToken,
 } from "../utils/generate-token.js";
 import { cookiesConfigration } from "../helper/cookie-config.js";
+import { generateError } from "../helper/generate-error.js";
+import { blacklistAccessToken } from "../utils/token-blacklist.js";
 
 dotenv.config();
 
@@ -53,11 +56,16 @@ export const handleRegister = async (req, res) => {
     });
 
     const refreshToken = generateRefreshToken(newUser);
-
+    console.log(
+      `Refresh token generated for user ${newUser._id}: ${refreshToken}`,
+    );
     newUser.refreshToken = refreshToken;
     await newUser.save();
 
     const accessToken = generateAccessToken(newUser);
+    console.log(
+      `Access token generated for user ${newUser._id}: ${accessToken}`,
+    );
 
     res.cookie("refreshToken", refreshToken, cookiesConfigration);
 
@@ -67,20 +75,109 @@ export const handleRegister = async (req, res) => {
     return res.status(201).json({
       message: "User created successfully",
       data: {
-        user: newUser.toObject(),
         accessToken,
       },
     });
-  } catch (err) {
-    return err instanceof Error
-      ? res.status(500).json({ message: err.message })
-      : res.status(500).json({ message: "Internal server error" });
-    // return res.status(500).json({ message: "Internal server error" });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      message: error.message || "Internal server error",
+    }); // return res.status(500).json({ message: "Internal server error" });
   }
 };
 
-export const handleLogin = async () => {};
+export const handleLogin = async (req, res) => {
+  try {
+    const erros = validationResult(req);
+    if (!erros.isEmpty()) {
+      generateError(erros.array()[0].msg, 400);
+    }
 
-export const handleLogout = async () => {};
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      generateError("Invalid credentials", 400);
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      generateError("Invalid credentials", 400);
+    }
+
+    const refreshToken = generateRefreshToken(user);
+    res.cookie("refreshToken", refreshToken, cookiesConfigration);
+    const accessToken = generateAccessToken(user);
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    res.status(200).json({
+      message: "Login successful",
+      data: {
+        accessToken,
+      },
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      message: error.message || "Internal server error",
+    });
+  }
+};
+
+export const handleLogout = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ message: "Access token not found" });
+    }
+
+    const accessToken = authHeader.split(" ")[1];
+    if (!accessToken) {
+      return res.status(401).json({ message: "Access token not found" });
+    }
+
+    console.log(`Access token received for logout: ${accessToken}`);
+    const accessTokenUser = jwt.verify(
+      accessToken,
+      process.env.JWT_ACCESS_SECRET_KEY,
+    );
+
+    if (!accessTokenUser) {
+      return res.status(401).json({ message: "Invalid access token" });
+    }
+
+    const refreshToken = req.cookies.refreshToken;
+    console.log(`Refresh token received for logout: ${refreshToken}`);
+    if (!refreshToken) {
+      return res.status(401).json({ message: "Refresh token not found" });
+    }
+
+    const user = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET_KEY);
+    if (!user) {
+      return res.status(401).json({ message: "Invalid refresh token" });
+    }
+
+    const dbUser = await User.findOne({ _id: user._id });
+    if (!dbUser) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    dbUser.refreshToken = null;
+    await dbUser.save();
+
+    blacklistAccessToken(accessToken, accessTokenUser.exp);
+    blacklistAccessToken(refreshToken, user.exp);
+
+    res.clearCookie("refreshToken", cookiesConfigration);
+
+    return res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    return generateError(
+      error.message || "Internal server error",
+      error.statusCode || 500,
+    );
+  }
+};
 
 export const handleForgotPassword = async () => {};

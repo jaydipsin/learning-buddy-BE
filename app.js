@@ -1,7 +1,8 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { mongoConnect, getDB } from "./src/utils/db.js";
+import { mongoConnect } from "./src/utils/db.js";
+import indexRoute from "./src/routes/index.routes.js";
 import cookieParser from "cookie-parser";
 import authRoute from "./src/routes/auth.route.js";
 
@@ -15,8 +16,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Routes
-
 app.use("/auth", authRoute);
+
+app.use("/api", indexRoute);
+
+app.use((err, req, res, next) => {
+  res.status(err.status || 500).json({
+    message: err.message,
+  });
+});
 
 // Auth routes
 mongoConnect(() => {

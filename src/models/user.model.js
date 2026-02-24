@@ -43,11 +43,13 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    toObject: function (doc, ret) {
-      delete ret.password;
-      delete ret.refreshToken;
-      delete ret.resetToken;
-      return ret;
+    toObject: {
+      transform: function (doc, ret) {
+        delete ret.password;
+        delete ret.refreshToken;
+        delete ret.resetToken;
+        return ret;
+      },
     },
   },
 );
