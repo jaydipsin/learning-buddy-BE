@@ -71,7 +71,6 @@ export const handleRegister = async (req, res) => {
 
     newUser.refreshToken = refreshToken;
     await newUser.save();
-    console.log(newUser);
     return res.status(201).json({
       message: "User created successfully",
       data: {
