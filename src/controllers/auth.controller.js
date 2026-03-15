@@ -10,7 +10,7 @@ import {
 } from "../utils/generate-token.js";
 import { cookiesConfigration } from "../helper/cookie-config.js";
 import { generateError } from "../helper/generate-error.js";
-import { blacklistAccessToken } from "../utils/token-blacklist.js";
+import { blacklistToken } from "../utils/token-blacklist.js";
 
 dotenv.config();
 
@@ -80,7 +80,7 @@ export const handleRegister = async (req, res) => {
   } catch (error) {
     return res.status(error.statusCode || 500).json({
       message: error.message || "Internal server error",
-    }); // return res.status(500).json({ message: "Internal server error" });
+    });
   }
 };
 
@@ -165,8 +165,8 @@ export const handleLogout = async (req, res) => {
     dbUser.refreshToken = null;
     await dbUser.save();
 
-    blacklistAccessToken(accessToken, accessTokenUser.exp);
-    blacklistAccessToken(refreshToken, user.exp);
+    blacklistToken(refreshToken, user.exp);
+    blacklistToken(accessToken, accessTokenUser.exp);
 
     res.clearCookie("refreshToken", cookiesConfigration);
 
