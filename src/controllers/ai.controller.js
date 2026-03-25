@@ -1,24 +1,18 @@
-import Groq from "groq-sdk";
-import dotenv from "dotenv";
+import { getUserDataById } from "../helper/data-retrive";
+import { generateError } from "../helper/generate-error";
 
-dotenv.config();
+export const chatWithAIMentor = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    const usertData = await getUserDataById(userId);
+    if (!usertData) {
+      res.status(404).json({ message: "User not found" });
+    }
 
-export async function handleAIRequest() {
-  const chatCompletion = await getGroqChatCompletion();
-  // Print the completion returned by the LLM.
-  console.log(chatCompletion.choices[0]?.message?.content || "");
-}
+    
 
-export async function getGroqChatCompletion() {
-  return groq.chat.completions.create({
-    messages: [
-      {
-        role: "user",
-        content: "Explain the importance of fast language models",
-      },
-    ],
-    model: process.env.CHAT_MODEL,
-  });
-}
+  } catch (error) {
+    generateError(error.message, error.status || 500, next);
+  }
+};
