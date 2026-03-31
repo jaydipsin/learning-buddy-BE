@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    // 1. Where files live and where they go
+    "rootDir": "./src",
+    "outDir": "./dist",
+
+    // 2. Node.js Environment
+    "module": "nodenext",
+    "target": "esnext",
+    "moduleResolution": "nodenext",
+    
+    // 3. Migration Helpers
+    "allowJs": true,          // Allows JS and TS to live together
+    "esModuleInterop": true,  // Fixes Express import errors
+    "strict": false,          // Turned off for the migration phase
+    
+    // 4. Types
+    "types": ["node"],        // Tells TS we are in a Node environment
+
+    // 5. Recommended Optimizations
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

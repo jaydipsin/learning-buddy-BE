@@ -2,12 +2,12 @@
   "name": "learning-buddy-be",
   "version": "1.0.0",
   "description": "Creating platform",
-  "main": "app.js",
+  "main": "app.ts",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "npx tsx watch app.ts",
+    "build": "tsc",
+    "start": "node dist/app.js"
   },
   "author": "Jaydip",
   "license": "ISC",
@@ -24,5 +24,13 @@
     "mongoose": "^9.2.1",
     "newman": "^6.2.2",
     "nodemon": "^3.1.11"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.5.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
   }
 }
