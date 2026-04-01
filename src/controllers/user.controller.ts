@@ -1,14 +1,9 @@
-import User from "../models/user.model.js";
-
+import { UserService } from "../services/user.service.js";
 export const handleUserProfile = async (req, res) => {
   try {
     console.log(`User profile fetched for user `, req.user);
-    const user = req.user;
-    const dbUser = await User.findOne({ _id: user._id });
-
-    if (!dbUser) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    const user = new UserService();
+    const dbUser = await user.getUserProfile(req);
     res.status(200).json({
       message: "User profile fetched successfully",
       data: {

@@ -8,6 +8,7 @@ import cookieParser from "cookie-parser";
 import { mongoConnect } from "./src/utils/db.js";
 import indexRoute from "./src/routes/index.routes.js";
 import authRoute from "./src/routes/auth.route.js";
+import { globalErrorHandler } from "./src/middlewares/error-handler.middleware.js";
 
 // Load environment variables
 dotenv.config();
@@ -26,6 +27,8 @@ app.use("/auth", authRoute);
 app.use("/api", indexRoute);
 
 // --- Global Error Handler ---
+app.use(globalErrorHandler);
+
 // TypeScript requires us to explicitly type these 4 parameters
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   const statusCode = err.status || err.statusCode || 500;
@@ -36,10 +39,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   });
 });
 
-// --- Database Connection & Server Start ---
 mongoConnect(() => {
-  // FIXED: app.listen does not take (req, res) as arguments.
-  // It takes no arguments (or an error in older node versions).
   app.listen(PORT, () => {
     console.log(`🚀 Server is running on port ${PORT}!`);
   });
