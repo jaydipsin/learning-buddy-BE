@@ -1,4 +1,7 @@
-import { USER_INTERACTION_INTENTS } from "../utils/constants";
+import {
+  USER_INTENT_KEYWORDS,
+  USER_INTERACTION_INTENTS,
+} from "../utils/constants.js";
 
 /**
  * Generates a dynamic system prompt for the AI Assistant.
@@ -73,8 +76,8 @@ function extractIntentFromMessage(message) {
 }
 
 export function generateIntentDataFromMessage(message, userSubjects) {
-    const intentData = {
-        intentType: extractIntentFromMessage(message),
-        subject: null, 
-    }
+  const intentData = {
+    intentType: extractIntentFromMessage(message),
+    subject: null,
+  };
 }

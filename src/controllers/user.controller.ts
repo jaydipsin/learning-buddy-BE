@@ -1,9 +1,14 @@
-import { UserService } from "../services/user.service.js";
-export const handleUserProfile = async (req, res) => {
+import { NextFunction, Request, Response } from "express";
+import { getUserProfileService } from "../services/user.service.js";
+
+export const handleUserProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     console.log(`User profile fetched for user `, req.user);
-    const user = new UserService();
-    const dbUser = await user.getUserProfile(req);
+    const dbUser = await getUserProfileService(req.user._id);
     res.status(200).json({
       message: "User profile fetched successfully",
       data: {
@@ -11,6 +16,6 @@ export const handleUserProfile = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error" });
+    next(error);
   }
 };

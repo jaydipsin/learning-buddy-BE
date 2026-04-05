@@ -3,6 +3,7 @@ import {
   JWT_ACCESS_SECRET_KEY,
   JWT_REFRESH_SECRET_KEY,
 } from "./global.config.js";
+import { IUser } from "../models/user.model.js";
 
 const ensureSecrets = () => {
   if (!JWT_ACCESS_SECRET_KEY || !JWT_REFRESH_SECRET_KEY) {
@@ -12,7 +13,7 @@ const ensureSecrets = () => {
   }
 };
 
-const generateRefreshToken = (user) => {
+const generateRefreshToken = (user: IUser) => {
   ensureSecrets();
   const refreshToken = jwt.sign(
     {
@@ -28,7 +29,7 @@ const generateRefreshToken = (user) => {
   );
   return refreshToken;
 };
-const generateAccessToken = (user) => {
+const generateAccessToken = (user: IUser) => {
   ensureSecrets();
   const accessToken = jwt.sign(
     {

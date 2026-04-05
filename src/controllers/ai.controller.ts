@@ -1,5 +1,5 @@
-import { getUserDataById } from "../helper/data-retrive";
-import { generateError } from "../helper/generate-error";
+import { getUserDataById } from "../helper/data-retrive.js";
+import { generateError } from "../helper/generate-error.js";
 
 export const chatWithAIMentor = async (req, res, next) => {
   try {

@@ -1,5 +1,5 @@
-import User from "../models/user.model";
-import { generateError } from "./generate-error";
+import User from "../models/user.model.js";
+import { generateError } from "./generate-error.js";
 
 export const getUserDataById = async (userId) => {
   try {

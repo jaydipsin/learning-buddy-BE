@@ -1,70 +1,49 @@
-import { body } from "express-validator";
-import { ALLOWED_ROLES } from "../utils/constants.js";
+import { z } from "zod";
 
-const authValidators = {
-  validateRegisterBody: [
-    body("userName").notEmpty().withMessage("User name is required"),
-    body("email")
-      .notEmpty()
-      .withMessage("Email is required")
-      .isEmail()
-      .withMessage("Invalid email address"),
-    body("password")
-      .notEmpty()
-      .withMessage("Password is required")
-      .isLength({ min: 8 })
-      .withMessage("Password must be at least 8 characters long"),
-    body("confirmPassword")
-      .notEmpty()
-      .withMessage("Confirm password is required")
-      .isLength({ min: 8 })
-      .withMessage("Confirm password must be at least 8 characters long"),
-    body("organizationName")
-      .optional()
-      .isString()
-      .withMessage("Organization name must be a string"),
-    body("parentNumber")
-      .optional()
-      .isNumeric()
-      .withMessage("Parent number must be numeric"),
-    body("subjects").notEmpty().withMessage("Subjects are required"),
-    body("role")
-      .notEmpty()
-      .withMessage("Role is required")
-      .isIn(ALLOWED_ROLES)
-      .withMessage("Invalid role"),
-  ],
-  validateLoginBody: [
-    body("email")
-      .notEmpty()
-      .withMessage("Email is required")
-      .isEmail()
-      .withMessage("Invalid email address"),
-    body("password")
-      .notEmpty()
-      .withMessage("Password is required")
-      .isLength({ min: 8 })
-      .withMessage("Password must be at least 8 characters long"),
-  ],
-  validateForgotPasswordBody: [
-    body("email")
-      .notEmpty()
-      .withMessage("Email is required")
-      .isEmail()
-      .withMessage("Invalid email address"),
-  ],
-  validateResetPasswordBody: [
-    body("password")
-      .notEmpty()
-      .withMessage("Password is required")
-      .isLength({ min: 8 })
-      .withMessage("Password must be at least 8 characters long"),
-    body("confirmPassword")
-      .notEmpty()
-      .withMessage("Confirm password is required")
-      .isLength({ min: 8 })
-      .withMessage("Confirm password must be at least 8 characters long"),
-  ],
+const ALLOWED_ROLES = ["admin", "user", "teacher"] as const; // example
+
+export const registerSchema = z
+  .object({
+    userName: z.string().min(1, "User name is required"),
+
+    email: z
+      .string()
+      .min(1, "Email is required")
+      .email("Invalid email address"),
+
+    password: z.string().min(8, "Password must be at least 8 characters long"),
+
+    confirmPassword: z
+      .string()
+      .min(8, "Confirm password must be at least 8 characters long"),
+
+    organizationName: z.string().optional(),
+
+    parentNumber: z
+      .string()
+      .regex(/^\d+$/, "Parent number must be numeric")
+      .optional(),
+
+    subjects: z.array(z.string()).min(1, "Subjects are required"),
+
+    role: z.enum(ALLOWED_ROLES, {
+      message: "Invalid role",
+    }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+export const loginSchema = z.object({
+  email: z.string().min(1, "Email is required").email("Invalid email address"),
+
+  password: z.string().min(8, "Password must be at least 8 characters long"),
+});
+
+export type IRegisterRequest = z.infer<typeof registerSchema>;
+export type ILoginRequest = z.infer<typeof loginSchema>;
+export type ILogoutParams = {
+  refreshToken: string;
+  accessToken: string;
 };
-
-export default authValidators;
