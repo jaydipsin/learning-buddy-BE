@@ -4,6 +4,7 @@ import {
   JWT_REFRESH_SECRET_KEY,
 } from "./global.config.js";
 import { IUser } from "../models/user.model.js";
+import mongoose from "mongoose";
 
 const ensureSecrets = () => {
   if (!JWT_ACCESS_SECRET_KEY || !JWT_REFRESH_SECRET_KEY) {
@@ -13,13 +14,17 @@ const ensureSecrets = () => {
   }
 };
 
-const generateRefreshToken = (user: IUser) => {
+const generateRefreshToken = (data: {
+  _id: mongoose.Types.ObjectId;
+  email: string;
+  role: string;
+}) => {
   ensureSecrets();
   const refreshToken = jwt.sign(
     {
-      _id: user._id,
-      email: user.email,
-      role: user.role,
+      _id: data._id,
+      email: data.email,
+      role: data.role,
     },
 
     JWT_REFRESH_SECRET_KEY,
@@ -29,13 +34,17 @@ const generateRefreshToken = (user: IUser) => {
   );
   return refreshToken;
 };
-const generateAccessToken = (user: IUser) => {
+const generateAccessToken = (data: {
+  _id: mongoose.Types.ObjectId;
+  email: string;
+  role: string;
+}) => {
   ensureSecrets();
   const accessToken = jwt.sign(
     {
-      _id: user._id,
-      email: user.email,
-      role: user.role,
+      _id: data._id,
+      email: data.email,
+      role: data.role,
     },
     JWT_ACCESS_SECRET_KEY,
     {

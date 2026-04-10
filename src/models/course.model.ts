@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const courseSchema = new mongoose.Schema(
   {
-    name: String,
+    name: { type: String, required: true, unique: true },
   },
   { timestamps: true },
 );

@@ -1,6 +1,7 @@
 import { z } from "zod";
+import Course from "../models/course.model.js";
 
-const ALLOWED_ROLES = ["admin", "user", "teacher"] as const; // example
+const ALLOWED_ROLES = ["admin", "student", "teacher"] as const; // example
 
 export const registerSchema = z
   .object({
@@ -24,7 +25,7 @@ export const registerSchema = z
       .regex(/^\d+$/, "Parent number must be numeric")
       .optional(),
 
-    subjects: z.array(z.string()).min(1, "Subjects are required"),
+    course: z.string().min(1, "Course is required"),
 
     role: z.enum(ALLOWED_ROLES, {
       message: "Invalid role",
@@ -37,7 +38,6 @@ export const registerSchema = z
 
 export const loginSchema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email address"),
-
   password: z.string().min(8, "Password must be at least 8 characters long"),
 });
 

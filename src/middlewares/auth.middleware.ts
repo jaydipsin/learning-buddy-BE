@@ -24,7 +24,7 @@ export const authMiddleware = (
     isTokenBlackListed(accessToken) ||
     isTokenBlackListed(req.cookies.refreshToken)
   ) {
-    throw new ApiError("Access token is missing", 401);
+    throw new ApiError("Access token is invalid", 401);
   }
 
   try {

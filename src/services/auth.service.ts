@@ -2,7 +2,7 @@ import {
   generateAccessToken,
   generateRefreshToken,
 } from "../utils/generate-token.js";
-import User from "../models/user.model.js";
+import User, { IUser } from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import {
   ILoginRequest,
@@ -10,19 +10,27 @@ import {
   IRegisterRequest,
 } from "../validators/auth.validator.js";
 import { ApiError } from "../utils/ApiError.js";
-import * as jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { blacklistToken } from "../utils/token-blacklist.js";
 import { JwtPayload } from "../types/jwt.types.js";
+import Course from "../models/course.model.js";
 
 export const registerUserService = async (userData: IRegisterRequest) => {
   const user = await User.findOne({
     $or: [{ email: userData.email }, { userName: userData.userName }],
   });
+  console.log("Tokens generated:", userData); // Debug log
+
   if (user) {
     throw new ApiError("User already exists", 400);
   }
 
   const hashPassword = await bcrypt.hash(userData.password, 10);
+
+  let course = await Course.findOne({ name: userData.course });
+  if (!course) {
+    course = await Course.create({ name: userData.course });
+  }
 
   const newUser = await User.create({
     userName: userData.userName,
@@ -30,12 +38,24 @@ export const registerUserService = async (userData: IRegisterRequest) => {
     password: hashPassword,
     organizationName: userData.organizationName,
     parentNumber: userData.parentNumber,
-    subjects: userData.subjects,
+    course: {
+      _id: course._id,
+      name: course.name,
+      subject: [],
+    },
     role: userData.role,
   });
 
-  const refreshToken = generateRefreshToken(newUser);
-  const accessToken = generateAccessToken(newUser);
+  const refreshToken = generateRefreshToken({
+    _id: newUser._id,
+    email: newUser.email,
+    role: newUser.role,
+  });
+  const accessToken = generateAccessToken({
+    _id: newUser._id,
+    email: newUser.email,
+    role: newUser.role,
+  });
 
   newUser.refreshToken = refreshToken;
   await newUser.save();

@@ -1,8 +1,8 @@
-
 import mongoose from "mongoose";
+import { optional } from "zod";
 
 export interface IUser {
-  _id?: string;
+  _id: mongoose.Types.ObjectId;
   userName: string;
   email: string;
   password?: string;
@@ -10,8 +10,28 @@ export interface IUser {
   resetToken?: string;
   organizationName: string;
   parentNumber: string;
-  subjects: string[];
+
+  // Updated course structure to match the new schema
+  course: {
+    _id: mongoose.Types.ObjectId;
+    name: string;
+    subject: {
+      _id: mongoose.Types.ObjectId;
+      name: string;
+    }[];
+  };
+
   role: "admin" | "teacher" | "student" | "parent";
+
+  progress?: {
+    topicId: mongoose.Types.ObjectId;
+    accuracy: number;
+    attempts: number;
+    correctAnswers: number;
+    wrongAnswers: number;
+    lastAttempted: Date;
+  }[];
+
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -56,8 +76,48 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    subjects: {
-      type: [String],
+    course: {
+      _id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Course",
+        required: true,
+      },
+      name: {
+        type: String,
+        required: true,
+      },
+      subject: {
+        type: [
+          {
+            _id: {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: "Subject",
+              required: true,
+            },
+            name: {
+              type: String,
+              required: true,
+            },
+          },
+        ],
+        default: [],
+      },
+    },
+    progress: {
+      type: [
+        {
+          topicId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Topic",
+            required: true,
+          },
+          accuracy: { type: Number, default: 0 },
+          attempts: { type: Number, default: 0 },
+          correctAnswers: { type: Number, default: 0 },
+          wrongAnswers: { type: Number, default: 0 },
+          lastAttempted: { type: Date, default: Date.now },
+        },
+      ],
       default: [],
     },
     role: {
@@ -88,9 +148,9 @@ const userSchema = new mongoose.Schema(
         return ret;
       },
     },
-  }
+  },
 );
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model<IUser>("User", userSchema);
 
 export default User;

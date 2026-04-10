@@ -18,7 +18,9 @@ export const handleRegister = async (
 ) => {
   const body = req.body;
 
+  console.log("Tokens generated:", body); // Debug log
   const tokens = await registerUserService(body);
+  console.log("Tokens generated:", tokens); // Debug log
   if (!tokens) {
     throw new ApiError("User registration failed", 500);
   }
